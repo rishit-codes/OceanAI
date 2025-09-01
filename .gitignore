@@ -1,0 +1,64 @@
+# =============================================================================
+# Dependencies
+# Ignore folders containing installed packages for both backend and frontend.
+# =============================================================================
+/venv
+/frontend/node_modules
+
+# =============================================================================
+# Secrets & Environment Variables
+# NEVER commit sensitive keys or environment-specific configurations.
+# =============================================================================
+backend/.env
+frontend/.env*
+*.env
+*.env.local
+service-account.json
+
+# =============================================================================
+# Generated & Sample Data
+# Ignore all files within these data directories...
+# =============================================================================
+/data/processed/*
+/data/sample_argo/*
+/data/embeddings/*
+/data/models/*
+
+# ...but DO NOT ignore the .gitkeep placeholder files that preserve the folders.
+!/data/processed/.gitkeep
+!/data/sample_argo/.gitkeep
+!/data/embeddings/.gitkeep
+!/data/models/.gitkeep
+
+# =============================================================================
+# Build Output & Logs
+# Ignore compiled files, build artifacts, and log files.
+# =============================================================================
+/frontend/dist
+/frontend/dist-ssr
+/frontend/.next
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =============================================================================
+# Python Cache
+# =============================================================================
+__pycache__/
+*.pyc
+
+# =============================================================================
+# IDE & OS Specific Files
+# Ignore configuration files from code editors and operating systems.
+# =============================================================================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,222 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Oceanographic Research Platform Design System */
+@layer base {
+  :root {
+    /* Ocean-inspired color palette */
+    --background: 210 100% 97%;
+    --foreground: 215 25% 15%;
+
+    /* Ocean depths gradient */
+    --primary: 215 85% 25%; /* Deep ocean blue */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 200 85% 35%; /* Ocean surface */
+    --secondary-foreground: 210 40% 98%;
+
+    /* Accent colors for data visualization */
+    --accent: 190 80% 50%; /* Aqua accent */
+    --accent-foreground: 215 25% 15%;
+
+    --muted: 210 30% 95%;
+    --muted-foreground: 215 20% 45%;
+
+    /* Specialized ocean colors */
+    --ocean-deep: 220 85% 15%;
+    --ocean-mid: 215 75% 25%;
+    --ocean-surface: 200 85% 45%;
+    --ocean-foam: 195 60% 85%;
+    
+    /* Data visualization palette */
+    --data-temperature: 15 85% 60%;
+    --data-salinity: 260 85% 60%;
+    --data-pressure: 45 85% 55%;
+    --data-oxygen: 120 60% 50%;
+
+    /* Gradient definitions */
+    --gradient-ocean: linear-gradient(135deg, hsl(220 85% 15%) 0%, hsl(215 75% 25%) 50%, hsl(200 85% 45%) 100%);
+    --gradient-surface: linear-gradient(90deg, hsl(200 85% 45%) 0%, hsl(195 75% 55%) 100%);
+    --gradient-depth: linear-gradient(180deg, hsl(195 60% 85%) 0%, hsl(215 75% 25%) 100%);
+
+    /* Animation variables */
+    --wave-duration: 3s;
+    --float-duration: 6s;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+    --border: 210 20% 85%;
+    --input: 210 20% 90%;
+    --ring: 215 85% 25%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 220 85% 8%;
+    --foreground: 210 40% 95%;
+    --card: 220 75% 10%;
+    --card-foreground: 210 40% 95%;
+    --popover: 220 75% 10%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 200 85% 45%;
+    --primary-foreground: 220 85% 8%;
+    --secondary: 215 30% 20%;
+    --secondary-foreground: 210 40% 95%;
+    --muted: 215 30% 15%;
+    --muted-foreground: 210 20% 65%;
+    --accent: 190 80% 50%;
+    --accent-foreground: 220 85% 8%;
+    --border: 215 30% 20%;
+    --input: 215 30% 18%;
+    --ring: 200 85% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans;
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsl(var(--ocean-surface) / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(var(--ocean-mid) / 0.1) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl lg:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl lg:text-3xl;
+  }
+}
+
+/* Ocean-themed animations */
+@keyframes wave {
+  0%, 100% {
+    transform: translateX(0px) translateY(0px);
+  }
+  33% {
+    transform: translateX(30px) translateY(-10px);
+  }
+  66% {
+    transform: translateX(-20px) translateY(10px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(1deg);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Utility classes for ocean effects */
+@layer components {
+  .ocean-gradient {
+    background: var(--gradient-ocean);
+  }
+  
+  .surface-gradient {
+    background: var(--gradient-surface);
+  }
+  
+  .depth-gradient {
+    background: var(--gradient-depth);
+  }
+
+  .animate-wave {
+    animation: wave var(--wave-duration) ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float var(--float-duration) ease-in-out infinite;
+  }
+
+  .animate-gradient {
+    background-size: 400% 400%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/10 border border-white/20;
+  }
+
+  .data-card {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  .ocean-text {
+    background: var(--gradient-ocean);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Scientific visualization styles */
+.chart-container {
+  @apply relative overflow-hidden rounded-xl;
+}
+
+.depth-profile {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--ocean-foam)) 0%,
+    hsl(var(--ocean-surface)) 20%,
+    hsl(var(--ocean-mid)) 60%,
+    hsl(var(--ocean-deep)) 100%
+  );
+}
+
+/* Responsive text scaling */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-3xl;
+  }
+  
+  h2 {
+    @apply text-2xl;
+  }
+  
+  h3 {
+    @apply text-xl;
+  }
+}

@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgis/postgis:13-3.1 # Using a specific PostGIS image is key
+    container_name: oceanai_db
+    environment:
+      - POSTGRES_USER=oceanuser
+      - POSTGRES_PASSWORD=oceanpassword
+      - POSTGRES_DB=oceandb
+    ports:
+      - "5432:5432"
+    volumes:
+      - oceanai_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  oceanai_data:
