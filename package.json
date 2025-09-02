@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "deck.gl": "^9.1.14",
+    "maplibre-gl": "^5.7.0",
+    "react-map-gl": "^8.0.4"
+  }
+}
