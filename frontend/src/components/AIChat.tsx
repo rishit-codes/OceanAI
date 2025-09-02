@@ -29,7 +29,11 @@ const AIChat = () => {
 
   const intelligentQueries = [
     "What is the average temperature?",
-    "Show me the most recent float profile",
+    "Show me the latest profile",
+    "How many floats are active?",
+    "What is the deepest measurement?",
+    "Show me salinity data",
+    "Where are the floats located?"
   ];
 
   const quickActions = [

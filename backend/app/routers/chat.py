@@ -7,7 +7,7 @@ from ..utils.database import get_db
 router = APIRouter()
 
 class ChatQuery(BaseModel):
-    question: str
+    message: str
 
 class ChatResponse(BaseModel):
     answer: str
@@ -18,5 +18,5 @@ async def handle_chat_query(query: ChatQuery, db: Session = Depends(get_db)):
     Receives a natural language question, queries the database,
     and returns an AI-generated answer based on the retrieved data.
     """
-    ai_answer = llm_service.get_ai_response(db, query.question)
+    ai_answer = llm_service.get_ai_response(db, query.message)
     return ChatResponse(answer=ai_answer)
