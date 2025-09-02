@@ -1,182 +1,133 @@
 import os
-import glob
-import netCDF4 as nc
-import numpy as np
+import logging
 import pandas as pd
-import geopandas as gpd
+import xarray as xr
 from sqlalchemy import create_engine
-from shapely.geometry import Point
-from tqdm import tqdm
 from dotenv import load_dotenv
-import cftime   # FIX: handle cftime objects
-from geoalchemy2 import Geometry   # ✅ use Geometry for PostGIS type
-from geoalchemy2.elements import WKTElement
 
+# --- Configuration ---
+load_dotenv()
 
-# Load environment variables from the .env file in the backend directory
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', 'backend', '.env')
-load_dotenv(dotenv_path=dotenv_path)
+DOWNLOAD_DIR = "data/sample_argo/"
+PROCESSED_LOG = "data/processed_files.log"
 
-# --- Database Connection ---
+# --- Database Configuration ---
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME")
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-if not all([DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME]):
-    print("FATAL: Database environment variables are not set. Please check your backend/.env file.")
-    exit()
+# --- Logging Setup ---
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] - %(message)s",
+    handlers=[
+        logging.FileHandler("data/ingestion.log", encoding='utf-8'),
+        logging.StreamHandler()
+    ],
+    encoding='utf-8'
+)
 
-DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-engine = create_engine(DB_URI)
+# --- Helper Functions ---
+def get_processed_files():
+    """Reads the log of already processed files to avoid duplication."""
+    if not os.path.exists(PROCESSED_LOG):
+        return set()
+    with open(PROCESSED_LOG, 'r') as f:
+        return set(line.strip() for line in f)
 
+def log_processed_file(filename):
+    """Adds a file to the log of processed files."""
+    with open(PROCESSED_LOG, 'a') as f:
+        f.write(f"{filename}\n")
 
-def to_datetime_safe(value):
-    """Convert cftime or numeric time to pandas.Timestamp safely."""  # FIX
-    if isinstance(value, cftime.DatetimeGregorian):
-        return pd.Timestamp(value.strftime("%Y-%m-%d %H:%M:%S"))
+def parse_argo_profile(file_path):
+    """Parses a single Argo NetCDF file and extracts profile data into a DataFrame."""
     try:
-        return pd.to_datetime(value)
-    except Exception:
-        return pd.NaT
+        with xr.open_dataset(file_path) as ds:
+            platform_number = int(ds.PLATFORM_NUMBER.values.astype(str).item().strip())
+            num_profiles = ds.sizes['N_PROF']
+            
+            profile_data = []
+            for i in range(num_profiles):
+                cycle_number = int(ds.CYCLE_NUMBER.values[i])
+                profile_time = pd.to_datetime(ds.JULD.values[i])
+                lat = ds.LATITUDE.values[i]
+                lon = ds.LONGITUDE.values[i]
 
+                temp = ds.TEMP_ADJUSTED.values[i]
+                sal = ds.PSAL_ADJUSTED.values[i]
+                pres = ds.PRES_ADJUSTED.values[i]
+                
+                df_prof = pd.DataFrame({
+                    'pressure': pres,
+                    'temperature': temp,
+                    'salinity': sal
+                })
+                
+                df_prof['platform_id'] = platform_number
+                df_prof['cycle_number'] = cycle_number
+                df_prof['timestamp'] = profile_time
+                df_prof['latitude'] = lat
+                df_prof['longitude'] = lon
+                
+                profile_data.append(df_prof)
 
-def process_argo_file(file_path):
-    """Extracts, cleans, and structures data from a single ARGO NetCDF file."""
-    try:
-        with nc.Dataset(file_path, 'r') as ds:
-            # --- PLATFORM_NUMBER ---
-            float_id = None
-            if "PLATFORM_NUMBER" in ds.variables:
-                platform_raw = ds.variables["PLATFORM_NUMBER"][:]
-                try:
-                    if platform_raw.ndim > 1:
-                        platform_raw = platform_raw[0]
-                    platform_str = "".join(
-                        ch.decode("utf-8") if isinstance(ch, (bytes, bytearray)) else str(ch)
-                        for ch in platform_raw
-                        if ch not in [b"--", "--", None]
-                    ).strip().replace("-", "")  # FIX: strip trailing dashes
-                    float_id = int(platform_str)
-                except Exception as e:
-                    print(f"DEBUG: Could not parse PLATFORM_NUMBER in {os.path.basename(file_path)} → {e}")
-
-            # --- LAT & LON ---
-            try:
-                lat = float(ds.variables["LATITUDE"][0].item())
-                lon = float(ds.variables["LONGITUDE"][0].item())
-            except Exception:
-                print(f"Skipping {os.path.basename(file_path)}: Missing LAT/LON.")
+            if not profile_data:
                 return None
-
-            # --- CYCLE_NUMBER ---
-            try:
-                cycle_number = int(ds.variables["CYCLE_NUMBER"][0].item())
-            except Exception:
-                cycle_number = -1
-
-            # --- Profile Data ---
-            pressure = ds.variables["PRES"][0, :].compressed().tolist() if "PRES" in ds.variables else []
-            temperature = ds.variables["TEMP"][0, :].compressed().tolist() if "TEMP" in ds.variables else []
-            salinity = ds.variables["PSAL"][0, :].compressed().tolist() if "PSAL" in ds.variables else []
-
-            min_len = min(len(pressure), len(temperature), len(salinity))
-            if min_len == 0:
-                return None
-            pressure, temperature, salinity = pressure[:min_len], temperature[:min_len], salinity[:min_len]
-
-            # --- JULD (time) ---
-            profile_time = pd.Timestamp.utcnow()  # fallback
-            if "JULD" in ds.variables:
-                juld_var = ds.variables["JULD"]
-                try:
-                    val = juld_var[0].item()
-                    profile_time = to_datetime_safe(val)  # FIX
-                except Exception as e:
-                    print(f"DEBUG: Failed to parse JULD for {os.path.basename(file_path)} → {e}")
-
-            return {
-                "float_id": float_id,
-                "cycle_number": cycle_number,
-                "profile_time": profile_time,
-                "latitude": lat,
-                "longitude": lon,
-                "pressure_dbar": pressure,
-                "temperature_celsius": temperature,
-                "salinity_psu": salinity,
-            }
+                
+            final_df = pd.concat(profile_data, ignore_index=True)
+            final_df.dropna(subset=['pressure', 'temperature', 'salinity'], inplace=True)
+            
+            return final_df
 
     except Exception as e:
-        print(f"Error processing {os.path.basename(file_path)}: {e}")
+        logging.error(f"Failed to parse {os.path.basename(file_path)}: {e}")
         return None
 
-
-def ingest_data(source_dir, parquet_output_dir):
-    print("AquaLense: Initiating ARGO data ingestion protocol...")
-    argo_files = glob.glob(os.path.join(source_dir, '*.nc'))
-
-    if not argo_files:
-        print(f"AquaLense WARNING: No NetCDF files found in {source_dir}. Aborting.")
+def main():
+    """Main function to ingest locally stored Argo data files."""
+    logging.info("🚀 Starting ARGO data ingestion pipeline from LOCAL files...")
+    processed_files = get_processed_files()
+    logging.info(f"Found {len(processed_files)} previously processed files.")
+    
+    try:
+        engine = create_engine(DATABASE_URL)
+        logging.info("✅ Successfully connected to the database.")
+    except Exception as e:
+        logging.error(f"❌ Failed to connect to database: {e}")
         return
 
-    print(f"Found {len(argo_files)} ARGO data files to process.")
+    # We are bypassing the network download and only processing local files.
+    local_files = [f for f in os.listdir(DOWNLOAD_DIR) if f.endswith('.nc')]
+    logging.info(f"Found {len(local_files)} local NetCDF files to process.")
+    
+    files_ingested_count = 0
+    for filename in local_files:
+        if filename in processed_files:
+            logging.info(f"Skipping already processed file: {filename}")
+            continue
 
-    all_profiles_data = []
-    for f in tqdm(argo_files, desc="Processing NetCDF files"):
-        profile_data = process_argo_file(f)
-        if profile_data:
-            all_profiles_data.append(profile_data)
+        local_filepath = os.path.join(DOWNLOAD_DIR, filename)
+        
+        try:
+            argo_df = parse_argo_profile(local_filepath)
+            
+            if argo_df is not None and not argo_df.empty:
+                # Use a smaller chunksize for local ingestion
+                argo_df.to_sql('argo_profiles', engine, if_exists='append', index=False, chunksize=500)
+                logging.info(f"✅ Ingested {len(argo_df)} data points from {filename}.")
+                log_processed_file(filename)
+                files_ingested_count += 1
+            else:
+                logging.warning(f"⚠️ No data ingested from {filename}.")
 
-    if not all_profiles_data:
-        print("AquaLense: No valid data could be processed. Check file integrity.")
-        return
-
-    df = pd.DataFrame(all_profiles_data)
-    df["profile_time"] = pd.to_datetime(df["profile_time"], errors="coerce")  # normalize
-
-    # ✅ Convert Shapely -> WKTElement with SRID=4326
-    df["geom"] = [
-        WKTElement(f'POINT({lon} {lat})', srid=4326)
-        for lon, lat in zip(df.longitude, df.latitude)
-    ]
-
-    print(f"\nWriting {len(df)} valid profiles to PostgreSQL...")
-    try:
-        df.to_sql(
-            'argo_profiles',
-            engine,
-            if_exists='append',
-            index=False,
-            chunksize=1000,
-            method='multi',
-            dtype={'geom': Geometry('POINT', srid=4326)}  # ✅ FIXED: proper PostGIS type
-        )
-        print("-> Data successfully ingested into the relational database.")
-    except Exception as e:
-        print(f"AquaLense ERROR: Failed to write to PostgreSQL. Error: {e}")
-
-    # ✅ Convert geom to string before saving parquet
-    df["geom"] = df["geom"].apply(lambda g: str(g) if g is not None else None)
-
-    if not os.path.exists(parquet_output_dir):
-        os.makedirs(parquet_output_dir)
-    parquet_path = os.path.join(parquet_output_dir, 'argo_indian_ocean.parquet')
-    print(f"\nWriting {len(df)} profiles to Parquet file at {parquet_path}...")
-    try:
-        df.to_parquet(parquet_path, index=False)
-        print("-> Data successfully stored in analytical format (Parquet).")
-    except Exception as e:
-        print(f"AquaLense ERROR: Failed to write to Parquet. Error: {e}")
-
-    print("\nAquaLense: Ingestion complete. The platform's knowledge base has been updated.")
-
+        except Exception as e:
+            logging.error(f"❌ Failed to process local file {filename}: {e}")
+            
+    logging.info(f"Pipeline run finished. Ingested {files_ingested_count} new local files. 🚀")
 
 if __name__ == "__main__":
-    SAMPLE_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "sample_argo")
-    PARQUET_DIR = os.path.join(os.path.dirname(__file__), "..", "processed")
-
-    print("Looking for .nc files in:", os.path.abspath(SAMPLE_DATA_DIR))
-    print("Parquet will be written to:", os.path.abspath(PARQUET_DIR))
-
-    ingest_data(SAMPLE_DATA_DIR, PARQUET_DIR)
+    main()

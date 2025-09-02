@@ -1,70 +1,48 @@
+# data/scripts/setup_db.py
+
+import logging
 import os
-import psycopg2
-from psycopg2 import sql
+from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 
-# Correctly locate the .env file in the backend directory
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', 'backend', '.env')
-load_dotenv(dotenv_path=dotenv_path)
+# --- Configuration ---
+load_dotenv()
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] - %(message)s")
 
-def initialize_database():
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME")
+
+if not all([DB_USER, DB_PASSWORD, DB_NAME]):
+    raise ValueError("Missing critical database environment variables.")
+
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+def reset_database():
     """
-    Connects to PostgreSQL, drops the existing argo_profiles table for a clean slate,
-    and recreates it with the final, correct schema.
+    Connects to the database and drops the argo_profiles table if it exists,
+    ensuring a clean slate for data ingestion.
     """
     try:
-        conn = psycopg2.connect(
-            dbname=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            host=os.getenv("DB_HOST"),
-            port=os.getenv("DB_PORT")
-        )
-        conn.autocommit = True
-        cursor = conn.cursor()
-
-        print("AquaLense: Re-initializing the ocean database...")
-
-        # Drop the old table if it exists to ensure a fresh start
-        cursor.execute("DROP TABLE IF EXISTS argo_profiles;")
-        print("-> Old table dropped.")
-
-        # Enable PostGIS extension
-        cursor.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
-        print("-> PostGIS extension enabled.")
-
-        # Recreate the table with the FINAL schema, including the 'id' column
-        create_table_command = """
-        CREATE TABLE argo_profiles (
-            id SERIAL PRIMARY KEY,
-            float_id INTEGER NOT NULL,
-            cycle_number INTEGER NOT NULL,
-            profile_time TIMESTAMP WITH TIME ZONE NOT NULL,
-            latitude REAL NOT NULL,
-            longitude REAL NOT NULL,
-            pressure_dbar REAL[],
-            temperature_celsius REAL[],
-            salinity_psu REAL[],
-            geom GEOMETRY(Point, 4326)
-        );
-        """
-        cursor.execute(create_table_command)
-        print("-> `argo_profiles` table created with correct schema.")
-
-        # Create indexes for performance
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_argo_float_id ON argo_profiles (float_id);")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_argo_profile_time ON argo_profiles (profile_time);")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_argo_geom ON argo_profiles USING GIST (geom);")
-        print("-> Performance indexes created.")
-        
-        print("\nAquaLense: Database reset complete. Ready for data.")
+        engine = create_engine(DATABASE_URL)
+        with engine.connect() as connection:
+            logging.info("Successfully connected to the database.")
+            
+            # Use a transaction to safely drop the table
+            with connection.begin():
+                logging.warning("Dropping table 'argo_profiles' if it exists...")
+                connection.execute(text("DROP TABLE IF EXISTS argo_profiles;"))
+                logging.info("✅ Table 'argo_profiles' dropped successfully.")
+            
+            logging.info("Database is now ready for fresh data ingestion.")
 
     except Exception as e:
-        print(f"AquaLense ERROR: A critical error occurred during database setup: {e}")
-    finally:
-        if 'conn' in locals() and conn:
-            cursor.close()
-            conn.close()
+        logging.error(f"❌ An error occurred during database reset: {e}")
+        raise
 
 if __name__ == "__main__":
-    initialize_database()
+    logging.info("🚀 Starting database reset process...")
+    reset_database()
+    logging.info("🚀 Database reset process finished.")
