@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Mic, MicOff, Sparkles, Database, BarChart3, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import apiClient from '@/api/client'; // Import our new API client
+import { chatService } from '@/api/services';
 
 interface Message {
   id: string;
@@ -62,14 +62,11 @@ const AIChat = () => {
     setIsLoading(true);
 
     try {
-      // --- REAL API CALL ---
-      const response = await apiClient.post('/chat', {
-        question: content.trim()
-      });
-
+      const response = await chatService.sendMessage(content.trim());
+      
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: response.data.answer,
+        content: response.answer,
         sender: 'ai',
         timestamp: new Date(),
       };
@@ -97,9 +94,9 @@ const AIChat = () => {
   };
 
   return (
-    <Card className="h-full flex flex-col data-card">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-border/20">
+      <div className="p-4 border-b border-border/20 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <Bot className="w-6 h-6 text-primary" />
           <div>
@@ -109,40 +106,42 @@ const AIChat = () => {
         </div>
       </div>
       
-      {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex items-start space-x-3 ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}
-            >
-              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}>
-                {message.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-              </div>
-              <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-              </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center">
-                <Bot className="w-4 h-4 animate-pulse" />
-              </div>
-              <div className="p-3 rounded-lg bg-muted text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="w-4 h-4 text-accent animate-spin" />
-                  <span className="text-sm">AI is analyzing...</span>
+      {/* Messages - Scrollable Area */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex items-start space-x-3 ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}
+              >
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'}`}>
+                  {message.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                </div>
+                <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+            ))}
+            {isLoading && (
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center">
+                  <Bot className="w-4 h-4 animate-pulse" />
+                </div>
+                <div className="p-3 rounded-lg bg-muted text-muted-foreground">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-4 h-4 text-accent animate-spin" />
+                    <span className="text-sm">AI is analyzing...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
 
-      {/* Quick Actions / Sample Queries */}
-      <div className="p-3 border-t border-border/20 bg-muted/30">
+      {/* Quick Actions / Sample Queries - Fixed */}
+      <div className="p-3 border-t border-border/20 bg-muted/30 flex-shrink-0">
         <div className="flex flex-wrap gap-1">
           {intelligentQueries.map((query, index) => (
             <Button
@@ -158,8 +157,8 @@ const AIChat = () => {
         </div>
       </div>
 
-      {/* Input */}
-      <div className="p-4 border-t border-border/20">
+      {/* Input - Fixed at Bottom */}
+      <div className="p-4 border-t border-border/20 flex-shrink-0">
         <div className="flex space-x-2">
           <Input
             value={inputValue}
@@ -173,7 +172,7 @@ const AIChat = () => {
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

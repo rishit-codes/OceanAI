@@ -78,8 +78,11 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-foreground">ArgoAI</span>
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-400/50 group-hover:scale-110">
+              <Waves className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">Aqua Lense</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -92,7 +95,7 @@ const Navigation = () => {
                   className={`flex items-center space-x-2 ${
                     isActive(item.path) 
                       ? 'bg-primary text-primary-foreground' 
-                      : 'hover:bg-accent/20'
+                      : 'hover:bg-accent/20 dark:hover:bg-cyan-400/20 dark:hover:text-cyan-200'
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
@@ -100,19 +103,21 @@ const Navigation = () => {
                 </Button>
               </Link>
             ))}
-            <ThemeToggle />
           </div>
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="outline" size="sm">
-              <Brain className="w-4 h-4 mr-2" />
-              AI Assistant
-            </Button>
+            <Link to="/ai-assistant">
+              <Button variant="outline" size="sm" className="dark:hover:bg-cyan-400/20 dark:hover:text-cyan-200 dark:hover:border-cyan-400/50">
+                <Brain className="w-4 h-4 mr-2" />
+                AI Assistant
+              </Button>
+            </Link>
+            <ThemeToggle />
             {isAuth && (
               <button
                 onClick={handleLogout}
-                className="px-3 py-1 rounded-full border border-border bg-background dark:bg-gray-800 text-foreground dark:text-white hover:bg-red-500 hover:text-white transition-colors"
+                className="px-3 py-1 rounded-full border border-border bg-background dark:bg-gray-800 text-foreground dark:text-white hover:bg-red-500 hover:text-white dark:hover:bg-red-600 dark:hover:border-red-500 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/30"
               >
                 Logout
               </button>
@@ -148,7 +153,7 @@ const Navigation = () => {
                     className={`w-full justify-start ${
                       isActive(item.path) 
                         ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-accent/20'
+                        : 'hover:bg-accent/20 dark:hover:bg-cyan-400/20 dark:hover:text-cyan-200'
                     }`}
                   >
                     <item.icon className="w-4 h-4 mr-2" />
@@ -158,10 +163,12 @@ const Navigation = () => {
               ))}
               
               <div className="pt-2 border-t border-border/20 space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Brain className="w-4 h-4 mr-2" />
-                  AI Assistant
-                </Button>
+                <Link to="/ai-assistant" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full justify-start dark:hover:bg-cyan-400/20 dark:hover:text-cyan-200 dark:hover:border-cyan-400/50">
+                    <Brain className="w-4 h-4 mr-2" />
+                    AI Assistant
+                  </Button>
+                </Link>
                 <Button size="sm" className="w-full justify-start bg-accent hover:bg-accent/90">
                   <Globe className="w-4 h-4 mr-2" />
                   Go Live

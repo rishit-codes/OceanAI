@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
 import About from "./pages/About";
+import AIAssistant from "./pages/AIAssistant";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signin from "./pages/Signin";
@@ -40,6 +41,7 @@ function App() {
             <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
             <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
             <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
+            <Route path="/ai-assistant" element={<RequireAuth><AIAssistant /></RequireAuth>} />
             <Route path="/about" element={<RequireAuth><About /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -56,23 +56,23 @@
   }
 
   .dark {
-    --background: 220 85% 8%;
-    --foreground: 210 40% 95%;
-    --card: 220 75% 10%;
-    --card-foreground: 210 40% 95%;
-    --popover: 220 75% 10%;
-    --popover-foreground: 210 40% 95%;
-    --primary: 200 85% 45%;
-    --primary-foreground: 220 85% 8%;
-    --secondary: 215 30% 20%;
-    --secondary-foreground: 210 40% 95%;
-    --muted: 215 30% 15%;
-    --muted-foreground: 210 20% 65%;
-    --accent: 190 80% 50%;
-    --accent-foreground: 220 85% 8%;
-    --border: 215 30% 20%;
-    --input: 215 30% 18%;
-    --ring: 200 85% 45%;
+    --background: 220 50% 8%;
+    --foreground: 210 40% 98%;
+    --card: 220 40% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 40% 12%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 200 85% 60%;
+    --primary-foreground: 220 85% 4%;
+    --secondary: 215 40% 20%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 40% 16%;
+    --muted-foreground: 210 30% 80%;
+    --accent: 190 80% 65%;
+    --accent-foreground: 220 85% 4%;
+    --border: 215 40% 20%;
+    --input: 215 40% 18%;
+    --ring: 200 85% 60%;
   }
 }
 
@@ -87,6 +87,13 @@
       radial-gradient(circle at 20% 80%, hsl(var(--ocean-surface) / 0.1) 0%, transparent 50%),
       radial-gradient(circle at 80% 20%, hsl(var(--ocean-mid) / 0.1) 0%, transparent 50%);
     min-height: 100vh;
+  }
+
+  .dark body {
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsl(200 85% 45% / 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(215 75% 35% / 0.18) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, hsl(220 85% 25% / 0.2) 0%, transparent 70%);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -183,6 +190,14 @@
     @apply bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
   }
 
+  .dark .data-card {
+    @apply bg-card/80 backdrop-blur-md border-border/50 shadow-lg shadow-cyan-400/5;
+  }
+
+  .dark .data-card:hover {
+    @apply shadow-2xl shadow-cyan-400/20 border-cyan-400/60 bg-card/90;
+  }
+
   .ocean-text {
     background: var(--gradient-ocean);
     -webkit-background-clip: text;
@@ -206,6 +221,610 @@
   );
 }
 
+/* Scroll animations */
+.scroll-animate {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-animate.animate-in {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Ocean waves animation for CTA section */
+.ocean-waves-animation {
+  background: linear-gradient(
+    -45deg,
+    rgba(59, 130, 246, 0.3) 0%,
+    rgba(6, 182, 212, 0.4) 25%,
+    rgba(59, 130, 246, 0.3) 50%,
+    rgba(6, 182, 212, 0.4) 75%,
+    rgba(59, 130, 246, 0.3) 100%
+  );
+  background-size: 400% 400%;
+  animation: ocean-flow 8s ease-in-out infinite;
+}
+
+/* Hero waves animation with light colors and slow speed */
+.hero-waves-animation {
+  background: linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(6, 182, 212, 0.15) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(59, 130, 246, 0.12) 75%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  background-size: 600% 600%;
+  animation: hero-wave-flow 12s ease-in-out infinite;
+}
+
+@keyframes ocean-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+    transform: translateY(0px);
+  }
+  25% {
+    background-position: 100% 50%;
+    transform: translateY(-5px);
+  }
+  50% {
+    background-position: 100% 100%;
+    transform: translateY(0px);
+  }
+  75% {
+    background-position: 0% 100%;
+    transform: translateY(5px);
+  }
+}
+
+@keyframes hero-wave-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+    transform: translateY(0px);
+  }
+  33% {
+    background-position: 100% 30%;
+    transform: translateY(-3px);
+  }
+  66% {
+    background-position: 50% 100%;
+    transform: translateY(3px);
+  }
+}
+
+/* Futuristic Network Elements */
+.futuristic-node {
+  @apply absolute w-3 h-3 bg-cyan-400 rounded-full shadow-lg;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(6, 182, 212, 0.3);
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
+
+.futuristic-node:hover {
+  @apply scale-150;
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.8), 0 0 60px rgba(6, 182, 212, 0.5);
+  transition: all 0.3s ease;
+}
+
+.futuristic-line {
+  @apply absolute bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent;
+  height: 2px;
+  animation: data-flow 3s linear infinite;
+}
+
+.futuristic-line:hover {
+  @apply via-cyan-300;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+  height: 3px;
+  transition: all 0.3s ease;
+}
+
+.line-1 {
+  top: 20%;
+  left: 15%;
+  width: 200px;
+  transform: rotate(45deg);
+}
+
+.line-2 {
+  top: 40%;
+  right: 20%;
+  width: 150px;
+  transform: rotate(-30deg);
+}
+
+.line-3 {
+  bottom: 30%;
+  left: 25%;
+  width: 180px;
+  transform: rotate(60deg);
+}
+
+.line-4 {
+  bottom: 20%;
+  right: 15%;
+  width: 120px;
+  transform: rotate(-45deg);
+}
+
+@keyframes pulse-glow {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes data-flow {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+/* Login Card Hover Light Effect */
+.login-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(6, 182, 212, 0.15),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.login-card:hover::before {
+  opacity: 1;
+}
+
+.login-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Water Drop Animation */
+.water-drop {
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.8) 0%, rgba(59, 130, 246, 0.6) 70%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: water-fall 2s ease-out forwards;
+}
+
+@keyframes water-fall {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(200px) scale(0.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(400px) scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* Underwater Fish and Bubble Animations */
+.fish {
+  position: absolute;
+  width: 20px;
+  height: 12px;
+  background: linear-gradient(45deg, #00bcd4, #0097a7);
+  border-radius: 50% 0 50% 0;
+  opacity: 0.6;
+}
+
+.fish::before {
+  content: '';
+  position: absolute;
+  right: -8px;
+  top: 2px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid #00bcd4;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.fish-1 {
+  top: 20%;
+  left: -30px;
+  animation: swim-right 12s linear infinite;
+}
+
+.fish-2 {
+  top: 60%;
+  right: -30px;
+  animation: swim-left 16s linear infinite;
+  transform: scaleX(-1);
+}
+
+.fish-3 {
+  top: 40%;
+  left: -30px;
+  animation: swim-right 14.4s linear infinite 4s;
+}
+
+.fish-4 {
+  top: 80%;
+  left: -30px;
+  animation: swim-right 13.6s linear infinite 2s;
+}
+
+.fish-5 {
+  top: 30%;
+  right: -30px;
+  animation: swim-left 15.2s linear infinite 6s;
+  transform: scaleX(-1);
+}
+
+.fish-6 {
+  top: 70%;
+  right: -30px;
+  animation: swim-left 14s linear infinite 3s;
+  transform: scaleX(-1);
+}
+
+.fish-7 {
+  top: 50%;
+  left: -30px;
+  animation: swim-right 16.8s linear infinite 7s;
+}
+
+.fish-8 {
+  top: 10%;
+  right: -30px;
+  animation: swim-left 13.2s linear infinite 1s;
+  transform: scaleX(-1);
+}
+
+.fish-feature-1 {
+  top: 25%;
+  left: -30px;
+  animation: swim-right 11.2s linear infinite;
+}
+
+.fish-feature-2 {
+  top: 65%;
+  right: -30px;
+  animation: swim-left 14.4s linear infinite 3s;
+  transform: scaleX(-1);
+}
+
+.fish-feature-3 {
+  top: 45%;
+  left: -30px;
+  animation: swim-right 12.8s linear infinite 6s;
+}
+
+.fish-feature-4 {
+  top: 85%;
+  right: -30px;
+  animation: swim-left 13.6s linear infinite 2s;
+  transform: scaleX(-1);
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+/* Light theme bubbles */
+.bubble {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.6) 0%, rgba(59, 130, 246, 0.3) 100%);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.4), inset 0 0 5px rgba(59, 130, 246, 0.2);
+}
+
+/* Dark theme bubbles */
+.dark .bubble {
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 100%);
+  box-shadow: 0 0 10px rgba(255,255,255,0.5), inset 0 0 5px rgba(255,255,255,0.3);
+}
+
+.bubble-1 {
+  width: 8px;
+  height: 8px;
+  left: 20%;
+  bottom: -20px;
+  animation: bubble-rise 6.4s linear infinite;
+}
+
+.bubble-2 {
+  width: 12px;
+  height: 12px;
+  left: 60%;
+  bottom: -20px;
+  animation: bubble-rise 8s linear infinite 1.6s;
+}
+
+.bubble-3 {
+  width: 6px;
+  height: 6px;
+  left: 80%;
+  bottom: -20px;
+  animation: bubble-rise 5.6s linear infinite 3.2s;
+}
+
+.bubble-4 {
+  width: 10px;
+  height: 10px;
+  left: 40%;
+  bottom: -20px;
+  animation: bubble-rise 7.2s linear infinite 0.8s;
+}
+
+.bubble-5 {
+  width: 9px;
+  height: 9px;
+  left: 15%;
+  bottom: -20px;
+  animation: bubble-rise 6.8s linear infinite 2.4s;
+}
+
+.bubble-6 {
+  width: 7px;
+  height: 7px;
+  left: 75%;
+  bottom: -20px;
+  animation: bubble-rise 5.2s linear infinite 4s;
+}
+
+.bubble-7 {
+  width: 11px;
+  height: 11px;
+  left: 50%;
+  bottom: -20px;
+  animation: bubble-rise 7.6s linear infinite 1.2s;
+}
+
+.bubble-8 {
+  width: 5px;
+  height: 5px;
+  left: 90%;
+  bottom: -20px;
+  animation: bubble-rise 4.8s linear infinite 3.6s;
+}
+
+.bubble-feature-1 {
+  width: 8px;
+  height: 8px;
+  left: 25%;
+  bottom: -20px;
+  animation: bubble-rise 6s linear infinite;
+}
+
+.bubble-feature-2 {
+  width: 10px;
+  height: 10px;
+  left: 55%;
+  bottom: -20px;
+  animation: bubble-rise 7.2s linear infinite 2s;
+}
+
+.bubble-feature-3 {
+  width: 6px;
+  height: 6px;
+  left: 75%;
+  bottom: -20px;
+  animation: bubble-rise 5.6s linear infinite 4s;
+}
+
+.bubble-feature-4 {
+  width: 9px;
+  height: 9px;
+  left: 35%;
+  bottom: -20px;
+  animation: bubble-rise 6.8s linear infinite 1s;
+}
+
+.bubble-feature-5 {
+  width: 7px;
+  height: 7px;
+  left: 85%;
+  bottom: -20px;
+  animation: bubble-rise 5.2s linear infinite 3s;
+}
+
+@keyframes swim-right {
+  0% {
+    left: -30px;
+  }
+  100% {
+    left: 100vw;
+  }
+}
+
+@keyframes swim-left {
+  0% {
+    right: -30px;
+  }
+  100% {
+    right: 100vw;
+  }
+}
+
+@keyframes bubble-rise {
+  0% {
+    bottom: -20px;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    bottom: 100vh;
+    opacity: 0;
+  }
+}
+
+/* About Page Floating Elements - 20 Fish */
+.fish-about-1 { top: 15%; left: -30px; animation: swim-right 20s linear infinite; }
+.fish-about-2 { top: 75%; right: -30px; animation: swim-left 25s linear infinite 10s; transform: scaleX(-1); }
+.fish-about-3 { top: 35%; left: -30px; animation: swim-right 22s linear infinite 5s; }
+.fish-about-4 { top: 55%; right: -30px; animation: swim-left 18s linear infinite 15s; transform: scaleX(-1); }
+.fish-about-5 { top: 25%; left: -30px; animation: swim-right 24s linear infinite 8s; }
+.fish-about-6 { top: 85%; right: -30px; animation: swim-left 21s linear infinite 3s; transform: scaleX(-1); }
+.fish-about-7 { top: 45%; left: -30px; animation: swim-right 19s linear infinite 12s; }
+.fish-about-8 { top: 65%; right: -30px; animation: swim-left 23s linear infinite 7s; transform: scaleX(-1); }
+.fish-about-9 { top: 5%; left: -30px; animation: swim-right 26s linear infinite 18s; }
+.fish-about-10 { top: 95%; right: -30px; animation: swim-left 17s linear infinite 2s; transform: scaleX(-1); }
+.fish-about-11 { top: 20%; left: -30px; animation: swim-right 21s linear infinite 14s; }
+.fish-about-12 { top: 80%; right: -30px; animation: swim-left 19s linear infinite 9s; transform: scaleX(-1); }
+.fish-about-13 { top: 40%; left: -30px; animation: swim-right 25s linear infinite 6s; }
+.fish-about-14 { top: 60%; right: -30px; animation: swim-left 22s linear infinite 16s; transform: scaleX(-1); }
+.fish-about-15 { top: 10%; left: -30px; animation: swim-right 18s linear infinite 11s; }
+.fish-about-16 { top: 90%; right: -30px; animation: swim-left 24s linear infinite 4s; transform: scaleX(-1); }
+.fish-about-17 { top: 30%; left: -30px; animation: swim-right 20s linear infinite 17s; }
+.fish-about-18 { top: 70%; right: -30px; animation: swim-left 26s linear infinite 1s; transform: scaleX(-1); }
+.fish-about-19 { top: 50%; left: -30px; animation: swim-right 23s linear infinite 13s; }
+.fish-about-20 { top: 12%; right: -30px; animation: swim-left 20s linear infinite 19s; transform: scaleX(-1); }
+
+.bubble-about-1 {
+  width: 12px;
+  height: 12px;
+  left: 10%;
+  bottom: -20px;
+  animation: bubble-rise 12s linear infinite;
+}
+
+.bubble-about-2 {
+  width: 8px;
+  height: 8px;
+  left: 70%;
+  bottom: -20px;
+  animation: bubble-rise 15s linear infinite 5s;
+}
+
+.bubble-about-3 {
+  width: 10px;
+  height: 10px;
+  left: 90%;
+  bottom: -20px;
+  animation: bubble-rise 18s linear infinite 8s;
+}
+
+.floating-star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.star-about-1 {
+  top: 20%;
+  left: 15%;
+  animation-delay: 0s;
+}
+
+.star-about-2 {
+  top: 60%;
+  right: 20%;
+  animation-delay: 1s;
+}
+
+.star-about-3 {
+  top: 40%;
+  left: 80%;
+  animation-delay: 2s;
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+/* 3D Heart Effect */
+.heart-3d-container {
+  perspective: 1000px;
+}
+
+.heart-3d-container svg {
+  transform-style: preserve-3d;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.heart-3d-container:hover svg {
+  transform: rotateY(15deg) rotateX(10deg) scale(1.2);
+  filter: drop-shadow(0 10px 20px rgba(239, 68, 68, 0.4)) 
+          drop-shadow(0 0 30px rgba(239, 68, 68, 0.6));
+}
+
+/* Team Horizontal Auto-Scroll */
+.team-scroll-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.team-scroll-track {
+  display: flex;
+  gap: 1.5rem;
+  animation: scroll-horizontal 30s linear infinite;
+  width: fit-content;
+}
+
+.team-scroll-track:hover {
+  animation-play-state: paused;
+}
+
+.team-card {
+  min-width: 280px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.team-card:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(6, 182, 212, 0.2);
+  border-color: rgba(6, 182, 212, 0.5);
+}
+
+.dark .team-card:hover {
+  box-shadow: 0 20px 40px rgba(6, 182, 212, 0.3);
+  border-color: rgba(6, 182, 212, 0.6);
+}
+
+@keyframes scroll-horizontal {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 /* Responsive text scaling */
 @media (max-width: 640px) {
   h1 {
@@ -218,5 +837,9 @@
   
   h3 {
     @apply text-xl;
+  }
+  
+  .team-card {
+    min-width: 240px;
   }
 }
