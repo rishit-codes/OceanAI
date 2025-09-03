@@ -156,6 +156,28 @@ docker-compose logs -f
 # Stop database
 docker-compose down
 
+## 🌐 Production Deployment
+
+### Quick Deploy Stack
+- **Frontend**: Netlify (Static hosting)
+- **Backend**: Render (Python web service) 
+- **Database**: Supabase (PostgreSQL + PostGIS)
+
+### Deploy Commands
+```bash
+# 1. Push to GitHub
+git add .
+git commit -m "Deploy to production"
+git push origin netlify-deployment
+
+# 2. Setup Services
+# - Supabase: Create project, enable PostGIS
+# - Render: Connect repo, set environment variables
+# - Netlify: Connect repo, auto-deploys from netlify.toml
+```
+
+📖 **See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step guide**
+
 ## 🌐 Netlify Deployment
 
 ### Frontend Deployment to Netlify
