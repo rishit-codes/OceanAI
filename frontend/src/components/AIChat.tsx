@@ -26,6 +26,7 @@ const AIChat = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const questionsScrollRef = useRef<HTMLDivElement>(null);
 
   const intelligentQueries = [
     "What is the average temperature?",
@@ -50,6 +51,43 @@ const AIChat = () => {
       scrollViewport.scrollTop = scrollViewport.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    // Auto-scroll questions horizontally
+    const scrollContainer = questionsScrollRef.current;
+    if (scrollContainer) {
+      let scrollAmount = 0;
+      const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+      
+      const autoScroll = () => {
+        scrollAmount += 1;
+        if (scrollAmount >= maxScroll) {
+          scrollAmount = 0;
+        }
+        scrollContainer.scrollLeft = scrollAmount;
+      };
+      
+      const interval = setInterval(autoScroll, 50);
+      
+      // Pause auto-scroll on hover
+      const handleMouseEnter = () => clearInterval(interval);
+      const handleMouseLeave = () => {
+        const newInterval = setInterval(autoScroll, 50);
+        return newInterval;
+      };
+      
+      scrollContainer.addEventListener('mouseenter', handleMouseEnter);
+      scrollContainer.addEventListener('mouseleave', () => {
+        const newInterval = setInterval(autoScroll, 50);
+        setTimeout(() => clearInterval(newInterval), 10000);
+      });
+      
+      return () => {
+        clearInterval(interval);
+        scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
+      };
+    }
+  }, []);
 
   const handleSendMessage = async (content: string = inputValue) => {
     if (!content.trim() || isLoading) return;
@@ -144,15 +182,18 @@ const AIChat = () => {
         </ScrollArea>
       </div>
 
-      {/* Quick Actions / Sample Queries - Fixed */}
-      <div className="p-3 border-t border-border/20 bg-muted/30 flex-shrink-0">
-        <div className="flex flex-wrap gap-1">
+      {/* Horizontal Scrolling Questions */}
+      <div className="border-t border-border/20 bg-muted/30 flex-shrink-0">
+        <div 
+          ref={questionsScrollRef}
+          className="flex gap-2 p-3 overflow-x-auto"
+        >
           {intelligentQueries.map((query, index) => (
             <Button
               key={index}
               variant="ghost"
               size="sm"
-              className="text-xs h-6 px-2"
+              className="text-xs h-8 px-3 whitespace-nowrap flex-shrink-0 hover:bg-white/10 dark:hover:bg-white/3 transition-colors"
               onClick={() => handleSendMessage(query)}
             >
               "{query}"
@@ -181,3 +222,12 @@ const AIChat = () => {
 };
 
 export default AIChat;
+
+// Add CSS for hiding scrollbar
+const style = document.createElement('style');
+style.textContent = `
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+`;
+document.head.appendChild(style);

@@ -1,9 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Navigation from '@/components/Navigation';
 import AIChat from '@/components/AIChat';
+import { dataService } from '@/api/services';
 import { 
   Waves, 
   Brain, 
@@ -21,6 +22,34 @@ import {
 import { Link } from 'react-router-dom';
 
 const Index = () => {
+  const [stats, setStats] = useState([
+    { label: 'Active Floats', value: '4,087', change: '+12%' },
+    { label: 'Daily Profiles', value: '15,234', change: '+8%' },
+    { label: 'Ocean Coverage', value: '87%', change: '+3%' },
+    { label: 'Data Points', value: '2.4M', change: '+25%' }
+  ]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const homeStats = await dataService.getHomeStats();
+        if (homeStats && !homeStats.error) {
+          setStats(homeStats);
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -79,12 +108,7 @@ const Index = () => {
     }
   ];
 
-  const stats = [
-    { label: 'Active Floats', value: '4,087', change: '+12%' },
-    { label: 'Daily Profiles', value: '15,234', change: '+8%' },
-    { label: 'Ocean Coverage', value: '87%', change: '+3%' },
-    { label: 'Data Points', value: '2.4M', change: '+25%' }
-  ];
+
 
   return (
   <div className="min-h-screen bg-background dark:bg-gray-900">
@@ -138,15 +162,29 @@ const Index = () => {
             </div>
             
             <div className="relative">
-              <Card className="data-card p-6 h-96 flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
-                <div className="text-center">
-                  <div className="w-32 h-32 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Globe className="w-16 h-16 text-primary" />
+              <div className="relative h-96 rounded-xl overflow-hidden border border-border/20 shadow-xl">
+                <video 
+                  className="w-full h-full object-cover"
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                >
+                  <source src="/hero-video.mp4" type="video/mp4" />
+                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 flex items-center justify-center">
+                    <div className="text-center">
+                      <Globe className="w-16 h-16 text-primary mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-foreground mb-2">Ocean Intelligence</h3>
+                      <p className="text-muted-foreground">Visualizing global oceanographic data</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">Ocean Intelligence</h3>
-                  <p className="text-muted-foreground">Visualizing global oceanographic data</p>
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-xl font-semibold mb-1">Ocean Intelligence</h3>
+                  <p className="text-white/80 text-sm">Visualizing global oceanographic data</p>
                 </div>
-              </Card>
+              </div>
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-accent/20 rounded-full blur-xl animate-pulse" />
             </div>
           </div>
@@ -160,10 +198,20 @@ const Index = () => {
             {stats.map((stat, index) => (
               <Card key={index} className="data-card p-6 text-center group hover:scale-105 transition-transform">
                 <div className="text-3xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
-                  {stat.value}
+                  {loading ? (
+                    <div className="animate-pulse bg-muted rounded h-8 w-16 mx-auto" />
+                  ) : (
+                    stat.value
+                  )}
                 </div>
                 <div className="text-sm text-muted-foreground mb-1">{stat.label}</div>
-                <div className="text-xs text-accent font-medium">{stat.change} this month</div>
+                <div className="text-xs text-accent font-medium">
+                  {loading ? (
+                    <div className="animate-pulse bg-muted rounded h-3 w-20 mx-auto" />
+                  ) : (
+                    stat.change
+                  )}
+                </div>
               </Card>
             ))}
           </div>

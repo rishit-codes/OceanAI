@@ -19,14 +19,20 @@ const INITIAL_VIEW_STATE = {
   longitude: 80.7718, // Centered on the Indian Ocean
   latitude: 12.8797,
   zoom: 3,
-  pitch: 45,
-  bearing: 0
+  pitch: 30,
+  bearing: 0,
+  maxZoom: 15,
+  minZoom: 1
 } as any; // FIX: Added 'as any' to resolve the TypeScript type error
 
 // A free, open map style from an external provider
 const MAP_STYLE = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 
-const InteractiveMap = () => {
+interface InteractiveMapProps {
+  isFullscreen?: boolean;
+}
+
+const InteractiveMap: React.FC<InteractiveMapProps> = ({ isFullscreen = false }) => {
   const [locations, setLocations] = useState<FloatLocation[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<any>(null);
@@ -50,17 +56,21 @@ const InteractiveMap = () => {
       id: 'scatterplot-layer',
       data: locations,
       pickable: true,
-      opacity: 0.8,
+      opacity: 0.9,
       stroked: true,
       filled: true,
-      radiusScale: 6,
-      radiusMinPixels: 5,
-      radiusMaxPixels: 15,
-      lineWidthMinPixels: 1,
+      radiusScale: 8,
+      radiusMinPixels: 6,
+      radiusMaxPixels: 20,
+      lineWidthMinPixels: 2,
       getPosition: d => [d.longitude, d.latitude],
-      getFillColor: [255, 140, 0, 180],
-      getLineColor: [255, 255, 255],
-      onHover: info => setTooltip(info)
+      getFillColor: [255, 140, 0, 200],
+      getLineColor: [255, 255, 255, 255],
+      onHover: info => setTooltip(info),
+      updateTriggers: {
+        getFillColor: locations,
+        getLineColor: locations
+      }
     })
   ];
   
@@ -69,18 +79,51 @@ const InteractiveMap = () => {
   }
 
   return (
-    <DeckGL
-      initialViewState={INITIAL_VIEW_STATE}
-      controller={true}
-      layers={layers}
-    >
-      <Map mapStyle={MAP_STYLE} />
+    <div className={`relative w-full h-full ${isFullscreen ? 'map-fullscreen' : ''}`}>
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        controller={true}
+        layers={layers}
+        style={{ position: 'relative', zIndex: 1 }}
+      >
+        <Map mapStyle={MAP_STYLE} />
+      </DeckGL>
+      
+      {/* Tooltip with higher z-index */}
       {tooltip && tooltip.object && (
-        <div style={{ position: 'absolute', zIndex: 1, pointerEvents: 'none', left: tooltip.x, top: tooltip.y }} className="bg-background p-2 rounded-md shadow-lg text-xs">
-          Float ID: {tooltip.object.float_id}
+        <div 
+          style={{ 
+            position: 'absolute', 
+            zIndex: 10000, 
+            pointerEvents: 'none', 
+            left: tooltip.x + 10, 
+            top: tooltip.y - 10,
+            transform: 'translate(0, -100%)'
+          }} 
+          className="map-tooltip"
+        >
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+            <span>Float #{tooltip.object.float_id}</span>
+          </div>
+          <div className="text-xs opacity-80 mt-1">
+            {tooltip.object.latitude.toFixed(4)}°, {tooltip.object.longitude.toFixed(4)}°
+          </div>
         </div>
       )}
-    </DeckGL>
+      
+      {/* Map controls overlay */}
+      <div className="map-controls">
+        <div className="text-xs font-medium">
+          🌊 Active Floats: {locations.length}
+        </div>
+        {isFullscreen && (
+          <div className="text-xs opacity-70 mt-1">
+            Zoom and pan to explore
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

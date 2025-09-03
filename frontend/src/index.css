@@ -89,6 +89,22 @@
     min-height: 100vh;
   }
 
+  /* Prevent text selection on non-interactive elements */
+  h1, h2, h3, h4, h5, h6, p, span, div:not([contenteditable]), label {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  /* Allow text selection on interactive elements */
+  input, textarea, [contenteditable], .selectable {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+  }
+
   .dark body {
     background-image: 
       radial-gradient(circle at 20% 80%, hsl(200 85% 45% / 0.15) 0%, transparent 50%),
@@ -825,6 +841,80 @@
   }
 }
 
+/* Map fullscreen styles */
+.map-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: var(--background);
+}
+
+.map-fullscreen .deck-canvas {
+  z-index: 1 !important;
+}
+
+.map-fullscreen .maplibregl-canvas {
+  z-index: 0 !important;
+}
+
+.map-tooltip {
+  z-index: 10000 !important;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+}
+
+.map-controls {
+  z-index: 100 !important;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .map-controls {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+.close-button {
+  z-index: 10001 !important;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.6);
+}
+
 /* Responsive text scaling */
 @media (max-width: 640px) {
   h1 {
@@ -841,5 +931,18 @@
   
   .team-card {
     min-width: 240px;
+  }
+  
+  .close-button {
+    width: 40px;
+    height: 40px;
+    top: 12px;
+    right: 12px;
+  }
+  
+  .map-controls {
+    top: 12px;
+    left: 12px;
+    padding: 8px;
   }
 }

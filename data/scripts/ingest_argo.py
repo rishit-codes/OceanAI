@@ -47,15 +47,15 @@ def parse_argo_profile(file_path):
     """Parses a single Argo NetCDF file and extracts profile data into a DataFrame."""
     try:
         with xr.open_dataset(file_path) as ds:
-            platform_number = int(ds.PLATFORM_NUMBER.values.astype(str).item().strip())
+            platform_number = str(ds.PLATFORM_NUMBER.values.flat[0]).strip()
             num_profiles = ds.sizes['N_PROF']
             
             profile_data = []
             for i in range(num_profiles):
                 cycle_number = int(ds.CYCLE_NUMBER.values[i])
                 profile_time = pd.to_datetime(ds.JULD.values[i])
-                lat = ds.LATITUDE.values[i]
-                lon = ds.LONGITUDE.values[i]
+                lat = float(ds.LATITUDE.values[i])
+                lon = float(ds.LONGITUDE.values[i])
 
                 temp = ds.TEMP_ADJUSTED.values[i]
                 sal = ds.PSAL_ADJUSTED.values[i]
